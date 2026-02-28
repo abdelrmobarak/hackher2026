@@ -1,0 +1,10 @@
+services:
+  deepsecure-ai-detector:
+    build: .
+    container_name: deepsecure-ai-detector
+    ports:
+      - "8200:8200"
+    restart: unless-stopped
+    volumes:
+      - ./artifacts:/app/artifacts
+

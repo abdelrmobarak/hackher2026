@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Avenir Next", "Segoe UI", sans-serif;
+  --font-display: "Canela", "Iowan Old Style", "Georgia", serif;
+  --color-background: #f6f1e7;
+  --color-foreground: #171513;
+  --color-surface: #fbf7ef;
+  --color-surface-strong: #f1e9db;
+  --color-primary-50: #fdf1e9;
+  --color-primary-100: #f7dfce;
+  --color-primary-300: #e4a786;
+  --color-primary-500: #c96f44;
+  --color-primary-700: #a75630;
+  --color-primary-900: #713620;
+  --color-muted: #6f665d;
+  --color-border-subtle: #ddd2c4;
+  --color-success: #5a8b69;
+  --color-warning: #c96f44;
+}
+
+@utility max-w-screen-4xl {
+  max-width: 96rem;
+}
+
+@layer base {
+  html {
+    height: 100%;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    overflow: hidden;
+  }
+
+  body {
+    height: 100%;
+    min-height: 100vh;
+    background:
+      linear-gradient(to bottom, rgba(251, 247, 239, 0.98), rgba(246, 241, 231, 0.92)),
+      linear-gradient(to right, rgba(221, 210, 196, 0.32) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(221, 210, 196, 0.26) 1px, transparent 1px),
+      var(--color-background);
+    background-size: auto, 100% 100%, 72px 72px, 72px 72px;
+    color: var(--color-foreground);
+    overflow: hidden;
+  }
+}
