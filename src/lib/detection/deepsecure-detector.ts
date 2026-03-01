@@ -7,8 +7,6 @@ interface UnknownRecord {
   [key: string]: unknown;
 }
 
-const minimumLikelyAiScore = 0.47;
-
 const toRecord = (value: unknown): UnknownRecord | null => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -91,22 +89,8 @@ const normalizeResponse = (responseData: unknown): DetectionAssessment => {
   const normalizedAuthenticConfidence = clampConfidence(
     authenticConfidenceScore === null ? 1 - normalizedAiConfidence : authenticConfidenceScore
   );
-  const isLikelyAiGenerated = normalizedAiConfidence >= minimumLikelyAiScore;
-
-  if (
-    !isLikelyAiGenerated &&
-    normalizedAiConfidence >= minimumLikelyAiScore - 0.1
-  ) {
-    return {
-      verdict: "inconclusive",
-      confidence: normalizedAiConfidence,
-      aiConfidence: normalizedAiConfidence,
-      authenticConfidence: normalizedAuthenticConfidence,
-      source: "detector",
-      summary:
-        "This unsigned image showed AI indicators, but the detector confidence was too low to report it as a reliable match."
-    };
-  }
+  const isLikelyAiGenerated =
+    normalizedAiConfidence >= normalizedAuthenticConfidence;
 
   return {
     verdict: isLikelyAiGenerated ? "likely-ai" : "likely-authentic",
