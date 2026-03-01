@@ -1,6 +1,8 @@
 export interface DetectionAssessment {
   verdict: string;
   confidence: number;
+  aiConfidence?: number;
+  authenticConfidence?: number;
   source: string;
   summary: string;
 }
@@ -11,4 +13,3 @@ export interface DetectionProvider {
     contentType?: string
   ) => Promise<DetectionAssessment>;
 }
-

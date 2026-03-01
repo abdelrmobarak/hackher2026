@@ -1,0 +1,43 @@
+## Inspiration
+
+We built DeepShield because trust in digital images is getting weaker as AI-generated media becomes more realistic and more common. It is no longer enough to simply look at a photo and assume it is real. We wanted to create something that helps people protect authentic images before they are questioned, while also giving users a way to evaluate suspicious files later. That led us to a system that combines image signing with AI-image detection in one product.
+
+## What it does
+
+DeepShield helps users verify whether an image can be trusted. It has two main flows: signing and checking.
+
+In the signing flow, a user uploads an image and DeepShield converts it into a normalized PNG. The app creates a secure digest from the exact image data, packages that into a signed record, and embeds it directly into the PNG metadata. The user can then download that signed version as a protected master copy.
+
+In the checking flow, a user uploads an image to verify it. DeepShield first looks for an embedded signature. If one is found, it validates the signature and checks whether the current pixels still match the original signed version. If no valid signature exists, the app falls back to an AI-image detection service to estimate whether the image is likely authentic, likely AI-generated, or inconclusive.
+
+## How we built it
+
+We built DeepShield as a full-stack web app using Next.js 15, React 19, TypeScript, and Tailwind CSS. The frontend includes dedicated signing and verification screens with drag-and-drop uploads, live previews, and clear status feedback.
+
+On the backend, we used Next.js API routes in the Node.js runtime. We used Sharp for image normalization and raw pixel processing, which allowed us to hash the actual image content instead of relying on simple metadata. For signing, we generate a SHA-256 digest from the normalized image and protect the payload with an HMAC-SHA256 signature using a server-side secret.
+
+We also built custom PNG metadata utilities so we could write and read signature data directly inside PNG chunks. For unsigned files, we connected the app to an AI-image detection endpoint and normalized the returned scores into user-friendly decisions.
+
+## Challenges we ran into
+
+One of our biggest challenges was handling images in a way that made verification reliable. Small format differences can change a file even when the image looks identical, so we had to normalize images before hashing them. Another challenge was embedding data directly into PNG metadata without breaking the file format, which meant handling chunk structure and CRC values correctly.
+
+We also had to balance two different verification strategies: strict signature-based validation for signed images and probabilistic AI detection for unsigned images. Making those two paths feel consistent in one user experience took careful design.
+
+## Accomplishments that we're proud of
+
+We are proud that DeepShield does more than just detect AI-generated images. It gives users a proactive way to protect authentic photos by embedding a secure verification record directly into the image itself. We are also proud that the app supports both strong authenticity checks for signed files and practical fallback analysis for unsigned ones.
+
+Another accomplishment is that we built the signing and verification flow into a simple interface that is easy to demo and understand, even though the underlying technical work involves hashing, cryptographic signing, metadata parsing, and image processing.
+
+## What we learned
+
+We learned that building trustworthy media tools requires both technical accuracy and a clear user experience. It is not enough to produce a correct result if the user cannot understand why the system reached that conclusion.
+
+We also learned a lot about image processing, cryptographic signatures, and PNG metadata internals. Most importantly, we learned that prevention and detection work best together: signing trusted media early creates a much stronger foundation than relying only on detection after content has already spread.
+
+## What's next for DeepShield
+
+Our next step is to make DeepShield even more useful in real-world trust workflows. We want to add stronger forensic feedback, such as highlighting where a signed image was altered instead of only reporting that it changed. We also want to add shareable public verification, so signed images can be checked more easily outside the app.
+
+Beyond that, we see DeepShield growing into a broader authenticity platform for creators, journalists, schools, and organizations that need a simple way to prove that digital images are original, unchanged, and trustworthy.

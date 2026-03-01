@@ -10,6 +10,9 @@ import { useFilePreview } from "@/src/hooks/use-file-preview";
 interface VerifyResponse {
   decision: string;
   summary: string;
+  confidence?: number;
+  aiConfidence?: number;
+  authenticConfidence?: number;
   error?: string;
 }
 
@@ -68,16 +71,26 @@ export const VerifyWorkbench = () => {
 
   const isLikelyAi =
     responseData?.decision === "altered" || responseData?.decision === "likely-ai";
+  const isInconclusive = responseData?.decision === "inconclusive";
   const decisionTone = responseData
     ? isLikelyAi
       ? "warning"
-      : "success"
+      : isInconclusive
+        ? "neutral"
+        : "success"
     : "neutral";
   const decisionLabel = responseData
     ? isLikelyAi
       ? "Likely AI"
-      : "Unlikely AI"
+      : isInconclusive
+        ? "Inconclusive"
+        : "Unlikely AI"
     : "Awaiting Upload";
+  const confidenceLabel =
+    responseData?.aiConfidence === undefined ||
+    responseData?.authenticConfidence === undefined
+      ? null
+      : `${Math.round(responseData.authenticConfidence * 100)}% real / ${Math.round(responseData.aiConfidence * 100)}% AI`;
 
   return (
     <section className="mx-auto grid h-full w-full max-w-5xl gap-3 lg:grid-cols-2 items-center justify-center">
@@ -170,6 +183,9 @@ export const VerifyWorkbench = () => {
             <p className="text-lg font-semibold text-foreground">
               {responseData.summary}
             </p>
+            {confidenceLabel ? (
+              <p className="text-sm leading-7 text-muted">{confidenceLabel}</p>
+            ) : null}
           </div>
         ) : selectedFile ? (
           <div className="grid h-full content-center justify-items-center gap-4 text-center">

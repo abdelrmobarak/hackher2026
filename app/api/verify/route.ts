@@ -42,7 +42,9 @@ const POST = async (request: Request) => {
       decision: detectionAssessment.verdict,
       source: detectionAssessment.source,
       summary: detectionAssessment.summary,
-      confidence: detectionAssessment.confidence
+      confidence: detectionAssessment.confidence,
+      aiConfidence: detectionAssessment.aiConfidence,
+      authenticConfidence: detectionAssessment.authenticConfidence
     });
   } catch {
     return Response.json(

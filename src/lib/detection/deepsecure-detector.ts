@@ -7,6 +7,8 @@ interface UnknownRecord {
   [key: string]: unknown;
 }
 
+const minimumLikelyAiScore = 0.47;
+
 const toRecord = (value: unknown): UnknownRecord | null => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -66,19 +68,54 @@ const normalizeResponse = (responseData: unknown): DetectionAssessment => {
     getStringValue(rootRecord, "top_label") ||
     "real";
   const normalizedLabel = labelValue.toLowerCase();
+  const primaryScore = getNumberValue(rootRecord, "score");
+  const confidenceScore = getNumberValue(rootRecord, "confidence");
+  const aiConfidenceScore = getNumberValue(rootRecord, "ai_confidence");
+  const authenticConfidenceScore = getNumberValue(
+    rootRecord,
+    "authentic_confidence"
+  );
   const scoreValue =
-    getNumberValue(rootRecord, "score") ||
-    getNumberValue(rootRecord, "confidence") ||
-    0.5;
-  const isLikelyAiGenerated =
-    normalizedLabel.includes("fake") || normalizedLabel.includes("deepfake");
+    primaryScore === null
+      ? confidenceScore === null
+        ? 0.5
+        : confidenceScore
+      : primaryScore;
+  const normalizedAiConfidence = clampConfidence(
+    aiConfidenceScore === null
+      ? normalizedLabel.includes("fake") || normalizedLabel.includes("deepfake")
+        ? scoreValue
+        : 1 - scoreValue
+      : aiConfidenceScore
+  );
+  const normalizedAuthenticConfidence = clampConfidence(
+    authenticConfidenceScore === null ? 1 - normalizedAiConfidence : authenticConfidenceScore
+  );
+  const isLikelyAiGenerated = normalizedAiConfidence >= minimumLikelyAiScore;
+
+  if (
+    !isLikelyAiGenerated &&
+    normalizedAiConfidence >= minimumLikelyAiScore - 0.1
+  ) {
+    return {
+      verdict: "inconclusive",
+      confidence: normalizedAiConfidence,
+      aiConfidence: normalizedAiConfidence,
+      authenticConfidence: normalizedAuthenticConfidence,
+      source: "detector",
+      summary:
+        "This unsigned image showed AI indicators, but the detector confidence was too low to report it as a reliable match."
+    };
+  }
 
   return {
     verdict: isLikelyAiGenerated ? "likely-ai" : "likely-authentic",
-    confidence: clampConfidence(scoreValue),
+    confidence: normalizedAiConfidence,
+    aiConfidence: normalizedAiConfidence,
+    authenticConfidence: normalizedAuthenticConfidence,
     source: "detector",
     summary: isLikelyAiGenerated
-      ? "This unsigned image is likely AI-generated."
+      ? "This unsigned image is likely AI-generated and should be treated as suspicious."
       : "This unsigned image is likely authentic."
   };
 };
@@ -114,4 +151,3 @@ export const createDeepsecureDetector = (endpoint: string): DetectionProvider =>
     }
   };
 };
-
